@@ -1,0 +1,56 @@
+# Archivos generados por el sistema
+.DS_Store
+Thumbs.db
+
+# Archivos generados por el compilador y el Makefile
+/build/
+/bin/
+*.o
+*.a
+*.so
+*.out
+
+# Archivos de entornos de desarrollo
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Archivos ejecutables
+*.exe
+*.app
+
+# Archivos de registro y temporales
+*.log
+*.tmp
+*.swp
+*~
+
+# Archivos de usuario y configuración local
+*.user
+*.suo
+
+# Archivos de copia de seguridad
+*.bak
+*.backup
+
+# Archivos de sistema operativo
+*.orig
+*.rej
+
+# Archivos de documentación generada
+/docs/_build/
+/docs/_out/
+
+# Archivos de paquetes y dependencias
+dependencies/
+packages/
+*.tar.gz
+*.zip
+
+# Exceptions
+!resources/**/*
+!include/**/*
+!src/**/*
+!Makefile
+!README.md

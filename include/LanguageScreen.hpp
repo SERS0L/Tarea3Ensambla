@@ -11,6 +11,8 @@ public:
     void handleEvent(const sf::Event& event);
     void update();
     void draw();
+    bool shouldSwitchScreen() const;
+    std::string getSelectedLanguage() const;
 
 private:
     void applyTheme();
@@ -23,12 +25,14 @@ private:
     bool languageSelected = false;
     bool mouseOnNextButton = false;
     bool mouseOnThemeButton = false;
+    bool goToNextScreen = false;
     std::string selectedLanguage;
 
     sf::Text title, selectionText;
     sf::RectangleShape buttonCR, buttonUSA, buttonBrasil, nextButton, themeButton;
     sf::Texture flagTextureCR, flagTextureUSA, flagTextureBrasil, themeIconTexture, nextButtonTexture;
     sf::Sprite flagSpriteCR, flagSpriteUSA, flagSpriteBrasil, themeIcon, nextButtonSprite;
+
 };
 
 #endif

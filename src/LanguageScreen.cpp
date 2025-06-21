@@ -99,6 +99,8 @@ void LanguageScreen::handleEvent(const sf::Event& event) {
             selectionText.setPosition(385, 350);
             selectedLanguage = "Portuguese";
             languageSelected = true;
+        } else if (nextButton.getGlobalBounds().contains(pos) && languageSelected) {
+            goToNextScreen = true;
         }
     }
 }
@@ -148,4 +150,12 @@ void LanguageScreen::applyTheme() {
 
     nextButton.setOutlineThickness(2);
     nextButton.setOutlineColor(currentTheme.outlineColor);
+}
+
+bool LanguageScreen::shouldSwitchScreen() const {
+    return goToNextScreen;
+}
+
+std::string LanguageScreen::getSelectedLanguage() const {
+    return selectedLanguage;
 }

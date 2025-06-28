@@ -1,0 +1,34 @@
+{
+  "name": "assembler-recognizer-be",
+  "version": "1.0.0",
+  "description": "Assembler Recognizer API",
+  "homepage": "https://github.com/Sleyter28/assembler-recognizer-be#readme",
+  "bugs": {
+    "url": "https://github.com/Sleyter28/assembler-recognizer-be/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sleyter28/assembler-recognizer-be.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "dev": "nodemon src/index.ts",
+    "build": "tsc",
+    "serve": "node dist/index.js"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.0.4",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "ollama": "^0.5.16"
+  }
+}

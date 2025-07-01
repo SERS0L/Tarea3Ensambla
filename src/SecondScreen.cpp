@@ -45,7 +45,7 @@ static size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* use
         if (res != CURLE_OK) {
         std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
         }
-  
+
       curl_easy_cleanup(curl);
       curl_slist_free_all(headers);
     }
@@ -81,13 +81,15 @@ std::string wrapText(const std::string& text, const sf::Font& font, unsigned int
 void SecondScreen::speakText(const std::string& text) {
     std::string langCode;
 
-    if (selectedLanguage == "Spanish") langCode = "es";
-    else if (selectedLanguage == "Portuguese") langCode = "pt";
-    else langCode = "en";
+    if (selectedLanguage == "English") {
+        langCode = "en-US";
+        std::string command = "pico2wave -l " + langCode + " -w temp_tts.wav \"" + text + "\" && aplay temp_tts.wav && rm temp_tts.wav";
+            std::system(command.c_str());
+    }
 
-    std::string command = "espeak -v " + langCode + " \"" + text + "\"";
-    std::system(command.c_str());
+    
 }
+
 
 
 SecondScreen::SecondScreen(sf::RenderWindow& win, const std::string& language, const Theme& theme, unsigned int fontSize, bool isBold)
@@ -110,15 +112,15 @@ SecondScreen::SecondScreen(sf::RenderWindow& win, const std::string& language, c
     micIcon.setTexture(micIconTexture);
     scaleAndCenter(micIcon, micButton);
 
-    inputField.setSize({400, 40});
+    inputField.setSize({600, 40});
     inputField.setFillColor(sf::Color::White);
-    inputField.setPosition((window.getSize().x - 400) / 2, 300);
+    inputField.setPosition((window.getSize().x - 600) / 2, 300);
 
-    responseBox.setSize({600, 500});
+    responseBox.setSize({1000, 500});
     responseBox.setFillColor(sf::Color::White);
     responseBox.setOutlineColor(sf::Color::Black);
     responseBox.setOutlineThickness(1);
-    responseBox.setPosition((window.getSize().x - 600) / 2, 370); 
+    responseBox.setPosition((window.getSize().x - 1000) / 2, 370); 
 
     prompt.setFont(font);
     prompt.setCharacterSize(fontSize + 4);
@@ -151,6 +153,7 @@ SecondScreen::SecondScreen(sf::RenderWindow& win, const std::string& language, c
 }
 
 void SecondScreen::handleEvent(const sf::Event& event) {
+    // Click en el botón de micrófono
     if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
         sf::Vector2f pos(event.mouseButton.x, event.mouseButton.y);
         if (micButton.getGlobalBounds().contains(pos)) {
@@ -165,6 +168,7 @@ void SecondScreen::handleEvent(const sf::Event& event) {
                 isRecording = true;
                 micIcon.setTexture(micRecordingTexture);
             } else {
+                // Stop recording
                 recorder->stop();
                 sf::SoundBuffer buffer = recorder->getBuffer();
                 buffer.saveToFile("resources/audio/grabacion.wav");
@@ -173,46 +177,85 @@ void SecondScreen::handleEvent(const sf::Event& event) {
                 isRecording = false;
                 micIcon.setTexture(micIconTexture);
 
-                // Transcribe the audio with Whisper CLI
+                // Transcription
+                auto startTranscription = std::chrono::high_resolution_clock::now();
                 std::string transcription = transcribeAudio();
+                auto endTranscription = std::chrono::high_resolution_clock::now();
+                long transcriptionDuration = std::chrono::duration_cast<std::chrono::milliseconds>(endTranscription - startTranscription).count();
+
                 userInput = transcription;
-                inputText.setString(userInput); // Update the input text with the transcription
+                inputText.setString(userInput);
+
+                // Backend
+                auto startBackend = std::chrono::high_resolution_clock::now();
                 std::string responseJson = sendPromptToBackend(userInput);
+                auto endBackend = std::chrono::high_resolution_clock::now();
+                long backendDuration = std::chrono::duration_cast<std::chrono::milliseconds>(endBackend - startBackend).count();
+
+                std::string modelResponse;
                 try {
                     auto parsed = nlohmann::json::parse(responseJson);
-                    std::string modelResponse = parsed["data"]["response"];
+                    modelResponse = parsed["data"]["response"];
                     std::string wrappedResponse = wrapText(modelResponse, font, fontSize, responseBox.getSize().x - 20);
                     responseText.setString(wrappedResponse);
-                    speakText(modelResponse); // Speaks the response
+                    // Update the response box size based on the text
+                    window.display();
                 } catch (const std::exception& e) {
                     std::cerr << "Error parsing JSON: " << e.what() << std::endl;
                     responseText.setString("There has been an error parsing the response.");
+                    modelResponse = "Error";
                 }
-                
+
+                auto startSpeech = std::chrono::high_resolution_clock::now();
+                speakText(modelResponse); // Synthesize speech from the model response
+                auto endSpeech = std::chrono::high_resolution_clock::now();
+                long speechDuration = std::chrono::duration_cast<std::chrono::milliseconds>(endSpeech - startSpeech).count();
+
+                // Performance report
+                long total = transcriptionDuration + backendDuration + speechDuration;
+                double P = static_cast<double>(backendDuration + speechDuration) / total;
+                int N = std::thread::hardware_concurrency();
+                if (N == 0) N = 4;
+                double speedup = 1.0 / ((1.0 - P) + (P / N));
+
+                std::cout << "\n======= Performance Measurement =======" << std::endl;
+                std::cout << "Transcription time      : " << transcriptionDuration << " ms" << std::endl;
+                std::cout << "Backend processing time : " << backendDuration << " ms" << std::endl;
+                std::cout << "Speech synthesis time   : " << speechDuration << " ms" << std::endl;
+                std::cout << "Total time              : " << total << " ms" << std::endl;
+                std::cout << "Parallelizable fraction (P): " << P << std::endl;
+                std::cout << "Available cores (N)     : " << N << std::endl;
+                std::cout << "Approximate speedup     : " << speedup << "x" << std::endl;
+                std::cout << "=======================================\n" << std::endl;
             }
         }
-    } else if (event.type == sf::Event::TextEntered) {
+    }
+
+    // Keyboard input
+    if (event.type == sf::Event::TextEntered && !isRecording) {
         if (event.text.unicode == 8 && !userInput.empty()) { // Backspace
             userInput.pop_back();
         } else if (event.text.unicode == 13) { // Enter
-            // Saves the prompt when Enter is pressed
             lastSubmittedPrompt = userInput;
             userInput.clear();
-            inputText.setString("");  // Clear the input field
+            inputText.setString("");
+
             std::string responseJson = sendPromptToBackend(lastSubmittedPrompt);
             try {
                 auto parsed = nlohmann::json::parse(responseJson);
                 std::string modelResponse = parsed["data"]["response"];
                 std::string wrappedResponse = wrapText(modelResponse, font, fontSize, responseBox.getSize().x - 20);
                 responseText.setString(wrappedResponse);
+                speakText(modelResponse);
             } catch (const std::exception& e) {
                 std::cerr << "Error parsing JSON: " << e.what() << std::endl;
                 responseText.setString("There has been an error parsing the response.");
             }
         } else if (event.text.unicode < 128 && event.text.unicode >= 32) {
             userInput += static_cast<char>(event.text.unicode);
-            inputText.setString(userInput); // Shows what the user is typing
         }
+
+        inputText.setString(userInput); // Siempre actualizar
     }
 }
 

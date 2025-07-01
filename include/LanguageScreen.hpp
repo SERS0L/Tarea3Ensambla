@@ -13,6 +13,11 @@ public:
     void draw();
     bool shouldSwitchScreen() const;
     std::string getSelectedLanguage() const;
+    unsigned int getSelectedFontSize() const;
+    Theme getCurrentTheme() const;
+    bool getIsBold() const { return isBold; }
+
+
 
 private:
     void applyTheme();
@@ -26,10 +31,13 @@ private:
     bool mouseOnNextButton = false;
     bool mouseOnThemeButton = false;
     bool goToNextScreen = false;
+
+    bool isBold = false;
+    unsigned int selectedFontSize = 24;
     std::string selectedLanguage;
 
-    sf::Text title, selectionText;
-    sf::RectangleShape buttonCR, buttonUSA, buttonBrasil, nextButton, themeButton;
+    sf::Text title, selectionText, plusText, minusText, boldToggleText;
+    sf::RectangleShape buttonCR, buttonUSA, buttonBrasil, nextButton, themeButton, increaseFontButton, decreaseFontButton, boldToggleButton;
     sf::Texture flagTextureCR, flagTextureUSA, flagTextureBrasil, themeIconTexture, nextButtonTexture;
     sf::Sprite flagSpriteCR, flagSpriteUSA, flagSpriteBrasil, themeIcon, nextButtonSprite;
 

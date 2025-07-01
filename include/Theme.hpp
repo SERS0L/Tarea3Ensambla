@@ -12,6 +12,10 @@ struct Theme {
     sf::Color disabledColor;
 };
 
+// Declaración de la función de conversión
+sf::Color uintToColor(unsigned int value);
+
+// Declaraciones de las funciones para crear temas
 Theme createDarkTheme();
 Theme createLightTheme();
 

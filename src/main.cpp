@@ -8,7 +8,7 @@ enum class Screen {
 };
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(1100, 600), "Language Selection", sf::Style::Close | sf::Style::Titlebar);
+    sf::RenderWindow window(sf::VideoMode(1600, 900), "Language Selection", sf::Style::Close | sf::Style::Titlebar);
     window.setFramerateLimit(60);
 
     Screen currentScreen = Screen::LANGUAGE_SELECTION;
@@ -33,11 +33,14 @@ int main() {
         // Lógica de cambio de pantalla
         if (currentScreen == Screen::LANGUAGE_SELECTION && langScreen.shouldSwitchScreen()) {
             std::string language = langScreen.getSelectedLanguage();
-            secondScreen = new SecondScreen(window, language);  // Ahora pasamos el idioma aquí
+            Theme theme = langScreen.getCurrentTheme();
+            unsigned int fontSize = langScreen.getSelectedFontSize();
+            bool isBold = langScreen.getIsBold();
+            secondScreen = new SecondScreen(window, language, theme, fontSize, isBold);
             currentScreen = Screen::SECOND_SCREEN;
         }
 
-        // Update & draw según pantalla
+        // Update & draw
         window.clear();
 
         if (currentScreen == Screen::LANGUAGE_SELECTION) {

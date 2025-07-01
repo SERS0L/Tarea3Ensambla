@@ -1,23 +1,33 @@
 #include "../include/Theme.hpp"
+#include "../include/ButtonsLogic.hpp"
+
+sf::Color uintToColor(unsigned int value) {
+    return sf::Color(
+        (value >> 16) & 0xFF,  // R
+        (value >> 8) & 0xFF,   // G
+        value & 0xFF,          // B
+        255                    // A (opacidad completa)
+    );
+}
 
 Theme createDarkTheme() {
     return Theme{
-        sf::Color(32, 33, 35),
-        sf::Color(224, 224, 224),
-        sf::Color(60, 60, 60),
-        sf::Color(100, 100, 100),
-        sf::Color(80, 80, 80),
-        sf::Color(40, 40, 40)
+        uintToColor(getDarkThemeBackgroundColor()),
+        uintToColor(getDarkThemeTextColor()),
+        uintToColor(getDarkThemeButtonColor()),
+        uintToColor(getDarkThemeOutlineColor()),
+        uintToColor(getDarkThemeHoverColor()),
+        uintToColor(getDarkThemeDisabledColor())
     };
 }
 
 Theme createLightTheme() {
     return Theme{
-        sf::Color(220, 220, 220),
-        sf::Color(50, 50, 50),
-        sf::Color(200, 200, 200),
-        sf::Color(150, 150, 150),
-        sf::Color(180, 180, 180),
-        sf::Color(160, 160, 160)
+        uintToColor(getLightThemeBackgroundColor()),
+        uintToColor(getLightThemeTextColor()),
+        uintToColor(getLightThemeButtonColor()),
+        uintToColor(getLightThemeOutlineColor()),
+        uintToColor(getLightThemeHoverColor()),
+        uintToColor(getLightThemeDisabledColor())
     };
 }

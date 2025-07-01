@@ -1,13 +1,30 @@
 #include "../include/LanguageScreen.hpp"
 #include "../include/Utils.hpp"
+#include "../include/ButtonsLogic.hpp"
 #include <iostream>
 
 LanguageScreen::LanguageScreen(sf::RenderWindow& win) : window(win) {
-    darkTheme = createDarkTheme();
-    lightTheme = createLightTheme();
+    darkTheme = {
+        uintToColor(getDarkThemeBackgroundColor()),
+        uintToColor(getDarkThemeTextColor()),
+        uintToColor(getDarkThemeButtonColor()),
+        uintToColor(getDarkThemeOutlineColor()),
+        uintToColor(getDarkThemeHoverColor()),
+        uintToColor(getDarkThemeDisabledColor())
+    };
+    
+    lightTheme = {
+        uintToColor(getLightThemeBackgroundColor()),
+        uintToColor(getLightThemeTextColor()),
+        uintToColor(getLightThemeButtonColor()),
+        uintToColor(getLightThemeOutlineColor()),
+        uintToColor(getLightThemeHoverColor()),
+        uintToColor(getLightThemeDisabledColor())
+    };
+    
     currentTheme = darkTheme;
 
-    if (!font.loadFromFile("resources/fonts/Ubuntu-Regular.ttf"))  {
+    if (!font.loadFromFile("resources/fonts/Ubuntu-Regular.ttf")) {
         std::cerr << "Error al cargar la fuente" << std::endl;
         exit(1);
     }
@@ -36,29 +53,79 @@ LanguageScreen::LanguageScreen(sf::RenderWindow& win) : window(win) {
 
     title.setFont(font);
     title.setString("Select a language");
-    title.setCharacterSize(30);
-    title.setPosition(430, 60);
+    title.setCharacterSize(50);
+    title.setPosition(610, 60);
 
     selectionText.setFont(font);
-    selectionText.setCharacterSize(24);
+    selectionText.setCharacterSize(30);
     selectionText.setStyle(sf::Text::Bold);
 
-    nextButton.setSize({50, 50});
-    nextButton.setPosition(520, 500);
+    nextButton.setSize({80, 80});
+    nextButton.setPosition(770, 750);
     nextButtonSprite.setTexture(nextButtonTexture);
 
 
-    buttonCR.setSize({200, 120});
-    buttonCR.setPosition(150, 200);
+    buttonCR.setSize({290, 180});
+    buttonCR.setPosition(182, 300);
     flagSpriteCR.setTexture(flagTextureCR);
 
-    buttonUSA.setSize({200, 120});
-    buttonUSA.setPosition(450, 200);
+    buttonUSA.setSize({290, 180});
+    buttonUSA.setPosition(654,300);
     flagSpriteUSA.setTexture(flagTextureUSA);
 
-    buttonBrasil.setSize({200, 120});
-    buttonBrasil.setPosition(750, 200);
+    buttonBrasil.setSize({290, 180});
+    buttonBrasil.setPosition(1126, 300);
     flagSpriteBrasil.setTexture(flagTextureBrasil);
+
+
+    increaseFontButton.setSize({40, 40});
+    increaseFontButton.setPosition(1542, 20);
+    increaseFontButton.setFillColor(currentTheme.buttonColor);
+    increaseFontButton.setOutlineThickness(1);
+    increaseFontButton.setOutlineColor(currentTheme.outlineColor);
+    
+    plusText.setFont(font);
+    plusText.setString("+");
+    plusText.setCharacterSize(30);
+    plusText.setFillColor(currentTheme.textColor);
+    plusText.setPosition(
+        increaseFontButton.getPosition().x + 10,
+        increaseFontButton.getPosition().y + 3
+    );
+    
+    // Botón "-"
+    decreaseFontButton.setSize({40, 40});
+    decreaseFontButton.setPosition(1498, 20);
+    decreaseFontButton.setFillColor(currentTheme.buttonColor);
+    decreaseFontButton.setOutlineThickness(1);
+    decreaseFontButton.setOutlineColor(currentTheme.outlineColor);
+    
+    minusText.setFont(font);
+    minusText.setString("-");
+    minusText.setCharacterSize(30);
+    minusText.setFillColor(currentTheme.textColor);
+    minusText.setPosition(
+        decreaseFontButton.getPosition().x + 10,
+        decreaseFontButton.getPosition().y + 3
+    );
+
+
+
+    boldToggleButton.setSize({40, 40});
+    boldToggleButton.setPosition(1450, 20);
+    boldToggleButton.setFillColor(currentTheme.buttonColor);
+    boldToggleButton.setOutlineThickness(1);
+    boldToggleButton.setOutlineColor(currentTheme.outlineColor);
+    
+    boldToggleText.setFont(font);
+    boldToggleText.setString("B");
+    boldToggleText.setCharacterSize(30);
+    boldToggleText.setStyle(sf::Text::Bold);
+    boldToggleText.setFillColor(currentTheme.textColor);
+    boldToggleText.setPosition(
+    boldToggleButton.getPosition().x + 22,
+    boldToggleButton.getPosition().y + 6
+);
 
     scaleAndCenter(flagSpriteCR, buttonCR);
     scaleAndCenter(flagSpriteUSA, buttonUSA);
@@ -81,26 +148,63 @@ void LanguageScreen::handleEvent(const sf::Event& event) {
         sf::Vector2f pos(event.mouseButton.x, event.mouseButton.y);
 
         if (themeButton.getGlobalBounds().contains(pos)) {
-            isDarkTheme = !isDarkTheme;
+            // Usamos la función ASM para cambiar el tema
+            isDarkTheme = changeTheme(isDarkTheme);
             currentTheme = isDarkTheme ? darkTheme : lightTheme;
             applyTheme();
         } else if (buttonCR.getGlobalBounds().contains(pos)) {
             selectionText.setString("Idioma seleccionado: Espanol");
-            selectionText.setPosition(390, 350);
+            selectionText.setPosition(590, 500);
             selectedLanguage = "Spanish";
             languageSelected = true;
         } else if (buttonUSA.getGlobalBounds().contains(pos)) {
             selectionText.setString("Selected language: English");
-            selectionText.setPosition(400, 350);
+            selectionText.setPosition(600, 500);
             selectedLanguage = "English";
             languageSelected = true;
         } else if (buttonBrasil.getGlobalBounds().contains(pos)) {
             selectionText.setString("Idioma selecionado: Portugues");
-            selectionText.setPosition(385, 350);
+            selectionText.setPosition(580, 500);
             selectedLanguage = "Portuguese";
             languageSelected = true;
         } else if (nextButton.getGlobalBounds().contains(pos) && languageSelected) {
             goToNextScreen = true;
+        } else if (increaseFontButton.getGlobalBounds().contains(pos)) {
+            // Usamos la función ASM para aumentar el tamaño de fuente
+            unsigned int titleSize = increaseFontSize(title.getCharacterSize());
+            unsigned int selectionSize = increaseFontSize(selectionText.getCharacterSize());
+            
+            if (titleSize != title.getCharacterSize()) {
+                title.setCharacterSize(titleSize);
+                title.setPosition((window.getSize().x - title.getLocalBounds().width) / 2.f, 60);
+            }
+            
+            if (selectionSize != selectionText.getCharacterSize()) {
+                selectionText.setCharacterSize(selectionSize);
+                selectionText.setPosition((window.getSize().x - selectionText.getLocalBounds().width) / 2.f, 350);
+            }
+            selectedFontSize = selectionText.getCharacterSize();
+        }
+        else if (decreaseFontButton.getGlobalBounds().contains(pos)) {
+            // Usamos la función ASM para disminuir el tamaño de fuente
+            unsigned int titleSize = decreaseFontSize(title.getCharacterSize());
+            unsigned int selectionSize = decreaseFontSize(selectionText.getCharacterSize());
+            
+            if (titleSize != title.getCharacterSize()) {
+                title.setCharacterSize(titleSize);
+                title.setPosition((window.getSize().x - title.getLocalBounds().width) / 2.f, 60);
+            }
+            
+            if (selectionSize != selectionText.getCharacterSize()) {
+                selectionText.setCharacterSize(selectionSize);
+                selectionText.setPosition((window.getSize().x - selectionText.getLocalBounds().width) / 2.f, 350);
+            }
+            selectedFontSize = selectionText.getCharacterSize();
+        }
+        else if (boldToggleButton.getGlobalBounds().contains(pos)) {
+            isBold = !isBold;
+            title.setStyle(isBold ? sf::Text::Bold : sf::Text::Regular);
+            selectionText.setStyle(isBold ? sf::Text::Bold : sf::Text::Regular);
         }
     }
 }
@@ -116,20 +220,20 @@ void LanguageScreen::update() {
     }
 }
 
-void LanguageScreen::draw() {
-    window.clear(currentTheme.backgroundColor);
-    window.draw(title);
-    window.draw(buttonCR);
-    window.draw(buttonUSA);
-    window.draw(buttonBrasil);
-    window.draw(flagSpriteCR);
-    window.draw(flagSpriteUSA);
-    window.draw(flagSpriteBrasil);
-    window.draw(selectionText);
-    window.draw(nextButton);
-    window.draw(nextButtonSprite);
-    window.draw(themeButton);
-    window.draw(themeIcon);
+bool LanguageScreen::shouldSwitchScreen() const {
+    return goToNextScreen;
+}
+
+std::string LanguageScreen::getSelectedLanguage() const {
+    return selectedLanguage;
+}
+
+unsigned int LanguageScreen::getSelectedFontSize() const {
+    return selectedFontSize;
+}
+
+Theme LanguageScreen::getCurrentTheme() const {
+    return currentTheme;
 }
 
 void LanguageScreen::applyTheme() {
@@ -150,12 +254,45 @@ void LanguageScreen::applyTheme() {
 
     nextButton.setOutlineThickness(2);
     nextButton.setOutlineColor(currentTheme.outlineColor);
+
+    increaseFontButton.setFillColor(currentTheme.buttonColor);
+    increaseFontButton.setOutlineThickness(1);
+    increaseFontButton.setOutlineColor(currentTheme.outlineColor);
+    plusText.setFillColor(currentTheme.textColor);
+    
+    decreaseFontButton.setFillColor(currentTheme.buttonColor);
+    decreaseFontButton.setOutlineThickness(1);
+    decreaseFontButton.setOutlineColor(currentTheme.outlineColor);
+    minusText.setFillColor(currentTheme.textColor);
+
+    boldToggleButton.setFillColor(currentTheme.buttonColor);
+    boldToggleButton.setOutlineColor(currentTheme.outlineColor);
+    boldToggleText.setFillColor(currentTheme.textColor);
 }
 
-bool LanguageScreen::shouldSwitchScreen() const {
-    return goToNextScreen;
+void LanguageScreen::draw() {
+    window.clear(currentTheme.backgroundColor);
+    window.draw(title);
+    window.draw(buttonCR);
+    window.draw(buttonUSA);
+    window.draw(buttonBrasil);
+    window.draw(flagSpriteCR);
+    window.draw(flagSpriteUSA);
+    window.draw(flagSpriteBrasil);
+    window.draw(selectionText);
+    window.draw(nextButton);
+    window.draw(nextButtonSprite);
+    window.draw(themeButton);
+    window.draw(themeIcon);
+    window.draw(increaseFontButton);
+    window.draw(plusText);
+    window.draw(decreaseFontButton);
+    window.draw(minusText);
+    window.draw(boldToggleButton);
+    window.draw(boldToggleText);
 }
 
-std::string LanguageScreen::getSelectedLanguage() const {
-    return selectedLanguage;
-}
+
+
+
+
